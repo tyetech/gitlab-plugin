@@ -1,52 +1,27 @@
-language: java
+language: android
 
-env:
-  global:
-    - DOCKER_CACHE_DIR=$HOME/.docker-images
+android:
+  components:
+    - build-tools-23.0.1
+    - android-22
+    - extra-android-m2repository
+    - extra-google-m2repository
 
-matrix:
-  fast_finish: true
+script:
+  - ./gradlew clean build check
 
-before_install:
-  - chmod +x travis/*.sh
+after_success:
+  - gradle/deploy_snapshot.sh
 
-install: true
+branches:
+  except:
+    - gh-pages
 
-jobs:
-  include:
-  - stage: test
-    script: ./travis/test.sh
+notifications:
+  email: false
 
-
-  - stage: integration-test
-    sudo: required
-    services:
-      - docker
-    env:
-      - GITLAB_VERSION=8.17.4
-    script: ./travis/integration-test.sh
-
-  - stage: integration-test
-    sudo: required
-    services:
-      - docker
-    env:
-      - GITLAB_VERSION=9.5.5
-    script: ./travis/integration-test.sh
-
-  - stage: integration-test
-    sudo: required
-    services:
-      - docker
-    env:
-      - GITLAB_VERSION=latest
-    script: ./travis/integration-test.sh
-
+sudo: false
 
 cache:
   directories:
-  - $DOCKER_CACHE_DIR
-  - $HOME/.m2/repository
-  - $HOME/.m2/wrapper
-before_cache:
-  - travis/before_cache.sh
+    - $HOME/.gradle
